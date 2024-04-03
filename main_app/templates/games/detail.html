@@ -1,0 +1,14 @@
+{% extends 'base.html' %} {% block content %}
+<div class="card">
+  <div class="card-content">
+    <span class="card-title">{{ game.name }}</span>
+    <p>Platform: {{ game.platform }}</p>
+    <p>Description: {{ game.description }}</p>
+    <p>Year Released: {{ game.year_released }}</p>
+  </div>
+  <div class="card-action">
+    <a href="{% url 'games_update' game.id %}">Edit</a>
+    <a href="{% url 'games_delete' game.id %}">Delete</a>
+  </div>
+</div>
+{% endblock %}
