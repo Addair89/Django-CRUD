@@ -1,14 +1,104 @@
 {% extends 'base.html' %} {% block content %}
-<div class="card">
-  <div class="card-content">
-    <span class="card-title">{{ game.name }}</span>
-    <p>Platform: {{ game.platform }}</p>
-    <p>Description: {{ game.description }}</p>
-    <p>Year Released: {{ game.year_released }}</p>
+<h1>Game Details</h1>
+<div class="row">
+  <div class="col s6">
+    <div class="card">
+      <div class="card-content">
+        <span class="card-title">{{ game.name }}</span>
+        <p>Platform: {{ game.platform }}</p>
+        <p>Description: {{ game.description }}</p>
+        <p>Year Released: {{ game.year_released }}</p>
+      </div>
+      <div class="card-action">
+        <a href="{% url 'games_update' game.id %}">Edit</a>
+        <a href="{% url 'games_delete' game.id %}">Delete</a>
+      </div>
+    </div>
   </div>
-  <div class="card-action">
-    <a href="{% url 'games_update' game.id %}">Edit</a>
-    <a href="{% url 'games_delete' game.id %}">Delete</a>
+  <div class="col s6">
+    <form action="{% url 'add_owner' game.id %}" method="POST">
+      {% csrf_token %} {{ owner_form.as_p }}
+      <input type="submit" class="btn" value="Add Owner" />
+    </form>
+    <table class="striped">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Last Played On</th>
+          <th>Discarded Reason</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for owner in game.owner_set.all %}
+        <tr>
+          <td>{{owner.name}}</td>
+          <td>{{owner.last_played}}</td>
+          <td>{{owner.get_reason_thrown_away_display}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
+<hr />
+<div class="row">
+  <div class="col s6">
+    <h3>{{ game.name }}'s store</h3>
+    {% if game.store.count %} {% for store in game.store.all %}
+    <div class="card">
+      <div class="card-content">
+        <span class="card-title">
+          {{ store.name|linebreaks }}
+        </span>
+        <p>location: {{store.location}}</p>
+      </div>
+      <div class="card-action">
+        <form
+          action="{% url 'rm_assoc_store' game.id store.id %}"
+          method="POST"
+        >
+          {% csrf_token %}
+          <button type="submit" class="btn">Remove</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %} {% else %}
+    <h5>No stores...</h5>
+    {% endif %}
+  </div>
+  <!-- Available store will come after this line -->
+  <div class="col s6">
+    <h3>Available Stores</h3>
+    {% if stores.count %} {% for store in stores.all %}
+    <div class="card">
+      <div class="card-content">
+        <span class="card-title">
+          {{ store.name|linebreaks }}
+        </span>
+        <p>location: {{store.location}}</p>
+      </div>
+      <div class="card-action">
+        <form action="{% url 'assoc_store' game.id store.id %}" method="POST">
+          {% csrf_token %}
+          <button type="submit" class="btn">Add</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %} {% else %}
+    <h5>{{game.name}} Already Has All Stores Available</h5>
+    {% endif %}
+  </div>
+</div>
+<script>
+  const dateEl = document.getElementById("id_last_played");
+  M.Datepicker.init(dateEl, {
+    format: "yyyy-mm-dd",
+    defaultDate: new Date(),
+    setDefaultDate: true,
+    autoClose: true,
+  });
+
+  const selectEl = document.getElementById("id_reason_thrown_away");
+  M.FormSelect.init(selectEl);
+</script>
 {% endblock %}
